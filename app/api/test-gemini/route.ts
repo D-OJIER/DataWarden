@@ -5,26 +5,26 @@ export async function GET() {
   try {
     console.log('Testing Gemini API...')
     
-    // Get API key from environment or use a placeholder
-    const apiKey = process.env.GOOGLE_GEMINI_API_KEY
-    
-    if (apiKey === "YOUR_API_KEY_HERE") {
-      return NextResponse.json({ 
-        error: 'Please replace YOUR_API_KEY_HERE with your actual Gemini API key',
+    // Get API key from environment
+    const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
+
+    if (!apiKey || apiKey === "YOUR_API_KEY_HERE") {
+      return NextResponse.json({
+        error: 'Gemini API key is missing or not set. Please add GOOGLE_GEMINI_API_KEY to your environment variables.',
         status: 'failed',
         instructions: [
           '1. Go to https://makersuite.google.com/app/apikey',
           '2. Create a new API key',
-          '3. Replace YOUR_API_KEY_HERE with your actual key',
+          '3. Add GOOGLE_GEMINI_API_KEY to your .env.local file',
           '4. Restart the development server'
         ]
-      })
+      });
     }
-    
-    console.log('Using API key:', apiKey.substring(0, 10) + '...')
-    
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" })
+
+    console.log('Using API key:', apiKey.substring(0, 10) + '...');
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     
     console.log('Calling Gemini API...')
     const result = await model.generateContent("Say 'Hello, Gemini is working!'")

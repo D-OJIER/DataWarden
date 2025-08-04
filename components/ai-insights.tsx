@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Brain, Sparkles, Loader2, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
+import { Brain, Sparkles, Loader2, RefreshCw, AlertCircle } from 'lucide-react'
 
 interface AIInsightsProps {
   data: any[]
@@ -14,6 +14,12 @@ export function AIInsights({ data }: AIInsightsProps) {
   const [error, setError] = useState('')
 
   const generateInsights = async () => {
+    console.log('Attempting to generate insights with data:', { 
+      dataExists: !!data,
+      length: data?.length,
+      sampleData: data?.slice(0, 2)
+    });
+    
     if (!data || data.length === 0) {
       setError('Please upload data first')
       setTimeout(() => setError(''), 3000)
@@ -24,15 +30,49 @@ export function AIInsights({ data }: AIInsightsProps) {
     setError('')
     
     try {
-      const response = await fetch('/api/ai', {
+      console.log('Sending data to API:', data.slice(0, 2));
+      
+      // Add API key to request header for validation
+      const response = await fetch('/api/gemini', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ data }),
-      })
+        body: JSON.stringify({ 
+          text: `Analyze this data and provide a concise report with:
 
-      const result = await response.json()
+1. Key Metrics
+| Metric | Current | Change |
+|--------|---------|--------|
+[Include the main metrics]
+
+2. Analysis
+- Key findings and trends
+- Notable changes
+- Main insights
+
+3. Recommendations
+- Action items
+- Improvement areas
+
+Use **bold** for emphasis, include % changes, and format numbers with commas.
+
+Data to analyze: ${JSON.stringify(data.slice(0, 2))}` 
+        }),
+        cache: 'no-store'
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        try {
+          const errorJson = JSON.parse(text);
+          throw new Error(errorJson.error || 'Failed to generate insights');
+        } catch (e) {
+          throw new Error(`Server error: ${response.status} - ${text.substring(0, 100)}`);
+        }
+      }
+
+      const result = await response.json();
 
       if (!response.ok) {
         // Handle specific error cases
@@ -109,26 +149,6 @@ export function AIInsights({ data }: AIInsightsProps) {
             )}
           </motion.button>
           
-          {/* API Key Setup Guide */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="mt-6 p-4 bg-muted rounded-lg border border-border"
-          >
-            <h4 className="text-sm font-medium mb-2">Setup Required</h4>
-            <p className="text-xs text-muted-foreground mb-3">
-              To use AI insights, you need to configure your Gemini API key:
-            </p>
-            <div className="text-left text-xs space-y-2">
-              <p className="text-muted-foreground">1. Get your API key from <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google AI Studio</a></p>
-              <p className="text-muted-foreground">2. Add it to your <code className="bg-background px-1 rounded">.env.local</code> file:</p>
-              <code className="block bg-background p-2 rounded text-xs font-mono">
-                GOOGLE_GEMINI_API_KEY=your_api_key_here
-              </code>
-              <p className="text-muted-foreground">3. Restart your development server</p>
-            </div>
-          </motion.div>
         </div>
       ) : (
         <motion.div
@@ -151,15 +171,122 @@ export function AIInsights({ data }: AIInsightsProps) {
               <Brain className="text-primary mt-1" size={20} />
             </motion.div>
             <div className="flex-1">
-              <h3 className="font-medium mb-2">AI Analysis</h3>
-              <motion.p 
-                className="text-sm leading-relaxed"
+              <h3 className="text-xl font-semibold text-primary mb-4 pb-2 border-b border-border">AI Analysis</h3>
+              <motion.div 
+                className="space-y-6"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                {insight}
-              </motion.p>
+                {insight.split('\n\n').map((block, i) => {
+                  if (!block.trim()) return null;
+
+                  // Handle section headers (1., 2., 3.)
+                  if (/^\d+\./.test(block)) {
+                    const [title, ...content] = block.split('\n');
+                    return (
+                      <div key={i} className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4 shadow-sm">
+                        <h4 className="text-lg font-bold text-primary mb-3">{title.replace(/^\d+\.\s*/, '')}</h4>
+                        <div className="space-y-2">
+                          {content.map((line, j) => {
+                            const bulletContent = line.replace(/^[-•]\s*/, '').trim();
+                            if (!bulletContent) return null;
+                            return (
+                              <div key={j} className="flex items-start space-x-3 hover:bg-muted/50 rounded-md p-2 transition-colors">
+                                <span className="text-primary mt-1">•</span>
+                                <p className="text-sm text-muted-foreground">
+                                  {bulletContent.split(/(\*\*.*?\*\*|\d+(?:\.\d+)?%?)/).map((part, k) => {
+                                    if (part.startsWith('**') && part.endsWith('**')) {
+                                      return (
+                                        <span key={k} className="font-semibold text-primary bg-primary/10 px-1 rounded">
+                                          {part.slice(2, -2)}
+                                        </span>
+                                      );
+                                    }
+                                    return /\d+(?:\.\d+)?%?/.test(part) ? 
+                                      <span key={k} className="font-semibold text-primary">{part}</span> : 
+                                      part;
+                                  })}
+                                </p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Handle tables
+                  if (block.includes('|')) {
+                    const tableLines = block.split('\n').filter(line => line.trim() && line.includes('|'));
+                    const headers = tableLines[0]
+                      .split('|')
+                      .filter(cell => cell.trim())
+                      .map(cell => cell.trim());
+                    
+                    const rows = tableLines
+                      .filter((_, i) => i > 1)
+                      .map(line => 
+                        line
+                          .split('|')
+                          .filter(cell => cell.trim())
+                          .map(cell => {
+                            const value = cell.trim();
+                            if (value.includes('%')) return value;
+                            const num = parseFloat(value.replace(/,/g, ''));
+                            return !isNaN(num) ? num.toLocaleString() : value;
+                          })
+                      );
+
+                    return (
+                      <div key={i} className="overflow-x-auto bg-gradient-to-br from-card to-card/95 rounded-lg border border-border/60 shadow-lg">
+                        <table className="min-w-full divide-y divide-border/60">
+                          <thead className="bg-gradient-to-r from-muted/80 to-muted">
+                            <tr>
+                              {headers.map((header, j) => (
+                                <th key={j} className="text-left py-4 px-6 text-sm font-semibold text-primary border-b border-border/60 first:rounded-tl-lg last:rounded-tr-lg">
+                                  {header}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/40 bg-transparent">
+                            {rows.map((row, j) => (
+                              <tr key={j} className="hover:bg-muted/30 transition-colors duration-200">
+                                {row.map((cell, k) => (
+                                  <td key={k} className="py-3.5 px-6 text-sm text-muted-foreground whitespace-nowrap font-medium">
+                                    {cell}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  }
+
+                  // Handle regular paragraphs
+                  return (
+                    <div key={i} className="bg-card/50 border border-border/50 rounded-lg p-4 shadow-sm">
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {block.split(/(\*\*.*?\*\*|\d+(?:\.\d+)?%?)/).map((part, j) => {
+                          if (part.startsWith('**') && part.endsWith('**')) {
+                            return (
+                              <span key={j} className="font-semibold text-primary bg-primary/10 px-1 rounded">
+                                {part.slice(2, -2)}
+                              </span>
+                            );
+                          }
+                          return /\d+(?:\.\d+)?%?/.test(part) ? 
+                            <span key={j} className="font-semibold text-primary">{part}</span> : 
+                            part;
+                        })}
+                      </p>
+                    </div>
+                  );
+                })}
+              </motion.div>
             </div>
           </div>
           <motion.button
@@ -189,19 +316,6 @@ export function AIInsights({ data }: AIInsightsProps) {
         )}
       </AnimatePresence>
 
-      {/* Data Summary */}
-      {data && data.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-4 p-3 bg-muted rounded-lg"
-        >
-          <p className="text-xs text-muted-foreground">
-            Analyzing {data.length} records with {Object.keys(data[0] || {}).length} columns
-          </p>
-        </motion.div>
-      )}
     </motion.div>
   )
-} 
+}
