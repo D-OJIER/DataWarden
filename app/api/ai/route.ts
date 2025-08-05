@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { env, validateEnv } from '../../../config/env'
 
 // Force Node.js runtime for environment variable access
 export const runtime = 'nodejs'
@@ -12,32 +11,16 @@ export async function GET() {
   try {
     console.log('Starting GET request handler...');
     
-    // Log raw environment state
-    console.log('Raw env check:', {
-      directKey: process.env.GOOGLE_GEMINI_API_KEY,
-      publicKey: process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY,
-      envKey: env.GEMINI_API_KEY,
-    });
-
-    // Validate environment
-    const isValid = validateEnv();
-    console.log('Environment validation result:', isValid);
-
-    if (!isValid) {
+    // Check API key
+    if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json({
         success: false,
-        error: 'Environment variables not properly configured',
+        error: 'GEMINI_API_KEY is not configured',
         apiKeyAvailable: false
       }, { status: 503 });
     }
 
-    const apiKey = env.GEMINI_API_KEY;
-                  
-    console.log('API Key Check:', {
-      isDefined: typeof process.env.GOOGLE_GEMINI_API_KEY !== 'undefined',
-      length: apiKey?.length,
-      firstFiveChars: apiKey?.substring(0, 5)
-    });
+    const apiKey = process.env.GEMINI_API_KEY;
     
     if (!apiKey) {
       return NextResponse.json({
@@ -76,16 +59,14 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    // Validate environment
-    if (!validateEnv()) {
-      console.error('Environment validation failed')
+    const apiKey = process.env.GEMINI_API_KEY;
+    
+    if (!apiKey) {
       return NextResponse.json({
-        error: 'Environment variables not properly configured. Check .env.local file.',
+        error: 'GEMINI_API_KEY is not configured. Check .env file.',
         status: 'failed'
       }, { status: 503 });
     }
-
-    const apiKey = env.GEMINI_API_KEY;
 
     // Get data from request body
     const body = await request.json();
