@@ -25,7 +25,7 @@ export async function POST(req: Request): Promise<Response> {
      * Use the Gemini AI model to generate content from the prompt.
      */
     const text = await generateContent(prompt);
-    console.log('Generated response length:', text.length);
+    console.log('Generated response length:', (text ?? '').length);
 
     /**
      * Return the generated content as a JSON response.
