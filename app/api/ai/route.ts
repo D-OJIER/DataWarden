@@ -40,13 +40,16 @@ export async function GET() {
       throw new Error('Failed to get response from Gemini');
     }
     const response = await result.response;
-    const text = response.text();
+    const responseText = response.text();
+    if (!responseText) {
+      throw new Error('Empty response from Gemini');
+    }
     
-    console.log('Gemini Response:', text);
+    console.log('Gemini Response:', responseText);
     
     return NextResponse.json({
       success: true,
-      message: text,
+      message: responseText,
       apiKeyAvailable: true
     });
     
@@ -105,7 +108,11 @@ export async function POST(request: NextRequest) {
       throw new Error('Failed to get response from Gemini');
     }
     const response = await result.response;
-    const insight = response.text();
+    const responseText = response.text();
+    if (!responseText) {
+      throw new Error('Empty response from Gemini');
+    }
+    const insight = responseText;
 
     return NextResponse.json({ 
       insight,
