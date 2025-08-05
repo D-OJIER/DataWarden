@@ -36,6 +36,9 @@ export async function GET() {
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     
     const result = await model.generateContent("Say: Hello, I am testing Ojier's Gemini integration!");
+    if (!result.response) {
+      throw new Error('Failed to get response from Gemini');
+    }
     const response = await result.response;
     const text = response.text();
     
@@ -98,6 +101,9 @@ export async function POST(request: NextRequest) {
 
     // Generate insights
     const result = await model.generateContent(prompt);
+    if (!result.response) {
+      throw new Error('Failed to get response from Gemini');
+    }
     const response = await result.response;
     const insight = response.text();
 
