@@ -5,15 +5,18 @@ import { useData } from '@/components/data-context'
 import { motion } from 'framer-motion'
 import { Sidebar } from '@/components/sidebar'
 import { Header } from '@/components/header'
-import { DataDisplay } from '@/components/data-display'
+import DataDisplay from '@/components/data-display'
 import { AdvancedCharts } from '@/components/advanced-charts'
 import { FilterPanel } from '@/components/filter-panel'
+import ChatSection from '@/components/chat-section'
 
-  const { data } = useData()
-  const [filters, setFilters] = useState({})
+
+export default function AnalyticsPage() {
+  const { data } = useData();
+  const [filters, setFilters] = useState({});
 
   return (
-    <div className="flex h-screen bg-background">
+  <div className="flex bg-background">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
@@ -39,9 +42,15 @@ import { FilterPanel } from '@/components/filter-panel'
                 <AdvancedCharts data={data} />
               </div>
             </div>
+            {data && data.length > 0 && (
+              <div className="mt-8">
+                {/* Chat section for AI questions about analytics */}
+                <ChatSection data={data} />
+              </div>
+            )}
           </motion.div>
         </main>
       </div>
     </div>
-  )
-} 
+  );
+}

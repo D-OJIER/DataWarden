@@ -14,7 +14,7 @@ export function AIUsage() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card border border-border rounded-lg p-6"
+      className={`bg-card border border-border rounded-lg ${usageStats.length > 0 ? 'p-6' : 'p-0'} h-auto min-h-0`}
     >
       <h2 className="text-xl font-semibold mb-4">AI Usage</h2>
       

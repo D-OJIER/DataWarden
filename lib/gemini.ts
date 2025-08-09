@@ -1,6 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
 
-console.log("Gemini API Key:", process.env.GEMINI_API_KEY); // Log the Gemini API key
 // Initialize the Gemini AI client
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 

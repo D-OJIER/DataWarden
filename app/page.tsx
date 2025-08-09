@@ -6,6 +6,7 @@ import { Header } from '@/components/header'
 import { UploadForm } from '@/components/upload-form'
 import DataDisplay from '@/components/data-display'
 import { AIInsights } from '@/components/ai-insights'
+import ChatSection from '@/components/chat-section'
 import { AIUsage } from '@/components/ai-usage'
 import { useAuth } from '@/components/auth-context'
 import { motion } from 'framer-motion'
@@ -48,7 +49,7 @@ export default function Dashboard() {
   ]
 
   return (
-    <div className="flex h-screen bg-background">
+  <div className="flex bg-background">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
@@ -95,15 +96,20 @@ export default function Dashboard() {
             </div>
 
             {/* Main Content */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 auto-rows-min">
               <UploadForm 
                 onDataParsed={setParsedData}
                 isLoading={isLoading}
                 setIsLoading={setIsLoading}
               />
-              <DataDisplay data={parsedData} />
+              <div>
+                <DataDisplay data={parsedData} />
+                {parsedData && parsedData.length > 0 && (
+                  <ChatSection data={parsedData} />
+                )}
+              </div>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 auto-rows-min">
               <AIInsights data={parsedData} />
               <AIUsage />
             </div>

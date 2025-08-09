@@ -7,12 +7,15 @@ import { Sidebar } from '@/components/sidebar'
 import { Header } from '@/components/header'
 import { UploadForm } from '@/components/upload-form'
 import { DataPreview } from '@/components/data-preview'
+import ChatSection from '@/components/chat-section'
 
-  const { data, setData } = useData()
-  const [isLoading, setIsLoading] = useState(false)
+
+export default function UploadPage() {
+  const { data, setData } = useData();
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
-    <div className="flex h-screen bg-background">
+  <div className="flex bg-background">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
@@ -37,9 +40,15 @@ import { DataPreview } from '@/components/data-preview'
               />
               <DataPreview data={data} />
             </div>
+            {data && data.length > 0 && (
+              <div className="mt-8">
+                {/* Chat section for AI questions about uploaded data */}
+                <ChatSection data={data} />
+              </div>
+            )}
           </motion.div>
         </main>
       </div>
     </div>
-  )
-} 
+  );
+}

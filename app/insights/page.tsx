@@ -9,10 +9,11 @@ import { AIInsights } from '@/components/ai-insights'
 import { AIUsage } from '@/components/ai-usage'
 import { InsightHistory } from '@/components/insight-history'
 
-  const { data } = useData()
+export default function InsightsPage() {
+  const { data } = useData();
 
   return (
-    <div className="flex h-screen bg-background">
+  <div className="flex bg-background">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
@@ -42,5 +43,5 @@ import { InsightHistory } from '@/components/insight-history'
         </main>
       </div>
     </div>
-  )
-} 
+  );
+}
