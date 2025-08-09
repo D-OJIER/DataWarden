@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { useData } from '@/components/data-context'
 import { motion } from 'framer-motion'
 import { Sidebar } from '@/components/sidebar'
 import { Header } from '@/components/header'
@@ -8,8 +9,7 @@ import { AIInsights } from '@/components/ai-insights'
 import { AIUsage } from '@/components/ai-usage'
 import { InsightHistory } from '@/components/insight-history'
 
-export default function InsightsPage() {
-  const [selectedData, setSelectedData] = useState<any[]>([])
+  const { data } = useData()
 
   return (
     <div className="flex h-screen bg-background">
@@ -31,7 +31,7 @@ export default function InsightsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
-                <AIInsights data={selectedData} />
+                <AIInsights data={data} />
               </div>
               <div className="space-y-6">
                 <AIUsage />

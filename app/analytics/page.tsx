@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { useData } from '@/components/data-context'
 import { motion } from 'framer-motion'
 import { Sidebar } from '@/components/sidebar'
 import { Header } from '@/components/header'
@@ -8,8 +9,7 @@ import { DataDisplay } from '@/components/data-display'
 import { AdvancedCharts } from '@/components/advanced-charts'
 import { FilterPanel } from '@/components/filter-panel'
 
-export default function AnalyticsPage() {
-  const [selectedData, setSelectedData] = useState<any[]>([])
+  const { data } = useData()
   const [filters, setFilters] = useState({})
 
   return (
@@ -35,8 +35,8 @@ export default function AnalyticsPage() {
                 <FilterPanel onFiltersChange={setFilters} />
               </div>
               <div className="lg:col-span-3 space-y-6">
-                <DataDisplay data={selectedData} />
-                <AdvancedCharts data={selectedData} />
+                <DataDisplay data={data} />
+                <AdvancedCharts data={data} />
               </div>
             </div>
           </motion.div>

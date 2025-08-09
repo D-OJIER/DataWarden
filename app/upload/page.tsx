@@ -1,14 +1,14 @@
 "use client"
 
 import { useState } from 'react'
+import { useData } from '@/components/data-context'
 import { motion } from 'framer-motion'
 import { Sidebar } from '@/components/sidebar'
 import { Header } from '@/components/header'
 import { UploadForm } from '@/components/upload-form'
 import { DataPreview } from '@/components/data-preview'
 
-export default function UploadPage() {
-  const [parsedData, setParsedData] = useState<any[]>([])
+  const { data, setData } = useData()
   const [isLoading, setIsLoading] = useState(false)
 
   return (
@@ -31,11 +31,11 @@ export default function UploadPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <UploadForm 
-                onDataParsed={setParsedData}
+                onDataParsed={setData}
                 isLoading={isLoading}
                 setIsLoading={setIsLoading}
               />
-              <DataPreview data={parsedData} />
+              <DataPreview data={data} />
             </div>
           </motion.div>
         </main>
